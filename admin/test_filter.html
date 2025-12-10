@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Settings Filter Test</title>
+</head>
+
+<body>
+    <h1>Testing Settings Filter</h1>
+    <div id="output"></div>
+
+    <script>
+        // Test the exclusion logic
+        const excludedSettings = [
+            // App Config page settings
+            'home_title', 'home_subtitle', 'input_label', 'input_hint', 'button_text',
+            'alt_home_title', 'alt_home_subtitle', 'alt_input_label', 'alt_input_hint', 'alt_button_text',
+            'whitelisted_countries',
+            // Popup Config page settings
+            'whitelist_error_title', 'whitelist_error_msg', 'whitelist_action_text', 'whitelist_action_url',
+            'alt_error_title', 'alt_error_msg'
+        ];
+
+        // Test settings
+        const testSettings = [
+            'app_name',
+            'api_enabled',
+            'alt_error_msg',           // Should be excluded
+            'alt_error_title',          // Should be excluded
+            'whitelist_action_text',    // Should be excluded
+            'whitelist_action_url',     // Should be excluded
+            'whitelist_error_msg',      // Should be excluded
+            'whitelist_error_title',    // Should be excluded
+            'default_operator',
+            'maintenance_mode'
+        ];
+
+        let html = '<h2>Exclusion Test Results:</h2><ul>';
+
+        testSettings.forEach(setting => {
+            const isExcluded = excludedSettings.includes(setting);
+            const status = isExcluded ? '❌ EXCLUDED' : '✅ SHOWN';
+            const color = isExcluded ? 'red' : 'green';
+            html += `<li><span style="color: ${color}; font-weight: bold;">${status}</span> - ${setting}</li>`;
+        });
+
+        html += '</ul>';
+        html += '<h3>Expected Result:</h3>';
+        html += '<p>Only these should be SHOWN (✅):</p>';
+        html += '<ul><li>app_name</li><li>api_enabled</li><li>default_operator</li><li>maintenance_mode</li></ul>';
+
+        document.getElementById('output').innerHTML = html;
+    </script>
+</body>
+
+</html>
