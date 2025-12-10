@@ -1,3 +1,8 @@
+<?php
+// Require authentication for all admin pages
+require_once(__DIR__ . '/../../includes/AdminAuth.php');
+AdminAuth::requireAuth();
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -137,6 +142,11 @@
                 <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'banner_config.php' ? 'active' : ''; ?>"
                     href="banner_config.php">
                     <i class="fas fa-image"></i> Banner Config
+                </a>
+            </li>
+            <li class="nav-item mt-auto" style="margin-top: auto; padding-top: 20px; border-top: 1px solid #eee;">
+                <a class="nav-link text-danger" href="logout.php">
+                    <i class="fas fa-sign-out-alt"></i> Logout
                 </a>
             </li>
         </ul>
