@@ -133,6 +133,12 @@
                     <i class="fas fa-exclamation-circle"></i> Popup Config
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'banner_config.php' ? 'active' : ''; ?>"
+                    href="banner_config.php">
+                    <i class="fas fa-image"></i> Banner Config
+                </a>
+            </li>
         </ul>
     </div>
 
