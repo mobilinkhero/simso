@@ -1,55 +1,90 @@
 <?php include 'includes/header.php'; ?>
 
 <style>
-    /* Page specific styles */
+    /* Page specific styles - Matching Android App Design */
+    .preview-container {
+        background: #f5f5f5;
+        padding: 40px 20px;
+        border-radius: 15px;
+        min-height: 500px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
     .preview-dialog {
         background: white;
-        border-radius: 20px;
-        padding: 30px;
-        max-width: 350px;
+        border-radius: 24px;
+        padding: 50px 40px;
+        max-width: 380px;
         margin: 0 auto;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
         text-align: center;
     }
 
     .preview-dialog .dialog-icon {
-        width: 60px;
-        height: 60px;
-        background: #f44336;
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #f44336 0%, #e53935 100%);
         border-radius: 50%;
-        margin: 0 auto 20px;
+        margin: 0 auto 30px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 30px;
+        font-size: 36px;
         color: white;
+        box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
     }
 
     .preview-dialog.whitelist .dialog-icon {
-        background: #ff9800;
+        background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+        box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
     }
 
     .preview-dialog h4 {
-        font-weight: bold;
-        margin-bottom: 15px;
-        color: #333;
+        font-weight: 700;
+        margin-bottom: 16px;
+        color: #1a1a1a;
+        font-size: 24px;
+        letter-spacing: -0.5px;
     }
 
     .preview-dialog p {
-        color: #666;
-        margin-bottom: 20px;
+        color: #757575;
+        margin-bottom: 0;
         line-height: 1.6;
+        font-size: 15px;
     }
 
     .preview-dialog .action-btn {
         background: #6B4CE6;
         color: white;
         border: none;
-        padding: 12px 30px;
-        border-radius: 10px;
-        font-weight: bold;
+        padding: 14px 32px;
+        border-radius: 12px;
+        font-weight: 600;
         cursor: pointer;
-        margin-top: 10px;
+        margin-top: 30px;
+        font-size: 15px;
+        box-shadow: 0 4px 12px rgba(107, 76, 230, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .preview-dialog .action-btn:hover {
+        background: #5a3dc9;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(107, 76, 230, 0.4);
+    }
+
+    .preview-header {
+        margin-bottom: 30px;
+    }
+
+    .preview-header h5 {
+        color: #333;
+        font-weight: 600;
+        margin-bottom: 20px;
     }
 </style>
 
@@ -134,38 +169,38 @@
 
         <!-- Preview Column -->
         <div class="col-md-5">
-            <div class="card bg-transparent shadow-none">
-                <div class="card-body text-center">
-                    <h5 class="mb-4">Live Preview</h5>
-                    <div class="d-flex justify-content-center mb-3">
-                        <div class="btn-group" role="group">
-                            <button type="button" class="btn btn-outline-warning active"
-                                onclick="setPreviewMode('whitelist')">Whitelisted</button>
-                            <button type="button" class="btn btn-outline-danger"
-                                onclick="setPreviewMode('alt')">Alternative</button>
-                        </div>
+            <div class="preview-header text-center">
+                <h5>Live Preview</h5>
+                <div class="d-flex justify-content-center mb-3">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-warning active"
+                            onclick="setPreviewMode('whitelist')">Whitelisted</button>
+                        <button type="button" class="btn btn-outline-danger"
+                            onclick="setPreviewMode('alt')">Alternative</button>
                     </div>
+                </div>
+            </div>
 
-                    <!-- Whitelisted Preview -->
-                    <div class="preview-dialog whitelist" id="preview-whitelist">
-                        <div class="dialog-icon">
-                            <i class="fas fa-exclamation-triangle"></i>
-                        </div>
-                        <h4 id="preview_whitelist_title">Record Not Found</h4>
-                        <p id="preview_whitelist_msg">We could not find any details for this number.</p>
-                        <button class="action-btn" id="preview_whitelist_btn" style="display: block; margin: 0 auto;">
-                            Contact Support
-                        </button>
+            <div class="preview-container">
+                <!-- Whitelisted Preview -->
+                <div class="preview-dialog whitelist" id="preview-whitelist">
+                    <div class="dialog-icon">
+                        <i class="fas fa-times"></i>
                     </div>
+                    <h4 id="preview_whitelist_title">Record Not Found</h4>
+                    <p id="preview_whitelist_msg">We could not find any details for this number.</p>
+                    <button class="action-btn" id="preview_whitelist_btn" style="display: block;">
+                        Contact Support
+                    </button>
+                </div>
 
-                    <!-- Alternative Preview -->
-                    <div class="preview-dialog" id="preview-alt" style="display: none;">
-                        <div class="dialog-icon">
-                            <i class="fas fa-times-circle"></i>
-                        </div>
-                        <h4 id="preview_alt_title">No Network Data</h4>
-                        <p id="preview_alt_msg">Network information is currently unavailable for this number.</p>
+                <!-- Alternative Preview -->
+                <div class="preview-dialog" id="preview-alt" style="display: none;">
+                    <div class="dialog-icon">
+                        <i class="fas fa-times"></i>
                     </div>
+                    <h4 id="preview_alt_title">No Network Data</h4>
+                    <p id="preview_alt_msg">Network information is currently unavailable for this number.</p>
                 </div>
             </div>
         </div>
