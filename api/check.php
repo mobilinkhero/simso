@@ -1,4 +1,8 @@
 <?php
+// Security: Block browser access
+require_once('../includes/ApiSecurity.php');
+ApiSecurity::blockBrowserAccess();
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST');

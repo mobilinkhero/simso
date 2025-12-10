@@ -1,0 +1,37 @@
+# Disable directory browsing
+Options -Indexes
+
+# Protect sensitive files
+<FilesMatch "\.(env|log|sql|md|txt)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Protect config directory
+<DirectoryMatch "config">
+    Order allow,deny
+    Deny from all
+</DirectoryMatch>
+
+# Protect includes directory  
+<DirectoryMatch "includes">
+    Order allow,deny
+    Deny from all
+</DirectoryMatch>
+
+# Custom error pages
+ErrorDocument 403 /index.php
+ErrorDocument 404 /index.php
+
+# Security headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "DENY"
+    Header set X-XSS-Protection "1; mode=block"
+</IfModule>
+
+# Prevent access to hidden files
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
