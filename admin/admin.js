@@ -58,9 +58,17 @@ function loadSettings() {
                 let html = '<form onsubmit="saveSettings(event)">';
                 data.data.forEach(setting => {
                     // Skip config items that are handled in the dedicated Config page
-                    if (['home_title', 'home_subtitle', 'input_label', 'input_hint', 'button_text',
+                    const excludedSettings = [
+                        // App Config page settings
+                        'home_title', 'home_subtitle', 'input_label', 'input_hint', 'button_text',
                         'alt_home_title', 'alt_home_subtitle', 'alt_input_label', 'alt_input_hint', 'alt_button_text',
-                        'whitelisted_countries'].includes(setting.setting_key)) return;
+                        'whitelisted_countries',
+                        // Popup Config page settings
+                        'whitelist_error_title', 'whitelist_error_msg', 'whitelist_action_text', 'whitelist_action_url',
+                        'alt_error_title', 'alt_error_msg'
+                    ];
+
+                    if (excludedSettings.includes(setting.setting_key)) return;
 
                     html += `<div class="mb-3">
                         <label class="form-label text-capitalize">${setting.setting_key.replace(/_/g, ' ')}</label>
