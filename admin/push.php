@@ -41,79 +41,113 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Send Notification using HTTP v1
         $title = $_POST['title'] ?? '';
         $body = $_POST['body'] ?? '';
-        $imageUrl = $_POST['image_url'] ?? '';
+        $enteredUrl = $_POST['image_url'] ?? '';
         $topic = $_POST['topic'] ?? 'all';
-        
-        try {
-            if (!file_exists($secureUploadPath)) {
-                throw new Exception("Service Account JSON not found. Please upload it first.");
-            }
-            
-            // 1. Get Access Token
-            $tokenData = GoogleAccessToken::getToken($secureUploadPath);
-            $accessToken = $tokenData['access_token'];
-            $projectId = $tokenData['project_id'];
-            
-            // 2. Prepare HTTP v1 Payload
-            $url = "https://fcm.googleapis.com/v1/projects/{$projectId}/messages:send";
-            
-            $notificationPayload = [
-                'title' => $title,
-                'body' => $body
-            ];
+        $finalImageUrl = $enteredUrl;
 
-            // Add image if provided
-            if (!empty($imageUrl)) {
-                $notificationPayload['image'] = $imageUrl;
-            }
-
-            $payload = [
-                'message' => [
-                    'topic' => $topic,
-                    'notification' => $notificationPayload,
-                    'data' => [
-                        'title' => $title,
-                        'body' => $body,
-                        'image' => $imageUrl, // Also send in data for foreground handling
-                        'click_action' => 'FLUTTER_NOTIFICATION_CLICK'
-                    ],
-                    'android' => [
-                        'priority' => 'high'
-                    ]
-                ]
-            ];
-            
-            // 3. Send Request
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                'Authorization: Bearer ' . $accessToken,
-                'Content-Type: application/json'
-            ]);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-            
-            $result = curl_exec($ch);
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            
-            if ($result === FALSE) {
-                 throw new Exception("CURL Error: " . curl_error($ch));
+        // Handle Image Upload
+        if (isset($_FILES['notification_image']) && $_FILES['notification_image']['error'] === UPLOAD_ERR_OK) {
+            $uploadDir = '../uploads/notifications/';
+            if (!file_exists($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
             }
             
-            curl_close($ch);
+            $fileName = time() . '_' . basename($_FILES['notification_image']['name']);
+            $targetPath = $uploadDir . $fileName;
             
-            $response = json_decode($result, true);
-            
-            if ($httpCode == 200 && isset($response['name'])) {
-                $message = "Notification sent successfully! (ID: " . $response['name'] . ")";
+            if (move_uploaded_file($_FILES['notification_image']['tmp_name'], $targetPath)) {
+                // Construct URL
+                // Assuming script is in /admin/push.php, we need root URL
+                $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
+                $host = $_SERVER['HTTP_HOST'];
+                // Adjust path based on your deployment. For localhost it might be /simsosiminfobackend/
+                // Ideally use the configured base URL, but we can construct it relative to current script
+                
+                // Hardcoding simso.sbs based on previous conversations, but fallback to dynamic
+                if (strpos($host, 'simso.sbs') !== false) {
+                     $finalImageUrl = "https://simso.sbs/uploads/notifications/" . $fileName;
+                } else {
+                     // Localhost or other
+                     $path = dirname(dirname($_SERVER['PHP_SELF'])); // go up one level from /admin
+                     $finalImageUrl = "$protocol://$host$path/uploads/notifications/$fileName";
+                }
             } else {
-                $errorMsg = isset($response['error']['message']) ? $response['error']['message'] : $result;
-                throw new Exception("FCM Error ($httpCode): " . $errorMsg);
+                $error = "Failed to upload image.";
             }
-            
-        } catch (Exception $e) {
-            $error = $e->getMessage();
+        }
+        
+        if (empty($error)) {
+            try {
+                if (!file_exists($secureUploadPath)) {
+                    throw new Exception("Service Account JSON not found. Please upload it first.");
+                }
+                
+                // 1. Get Access Token
+                $tokenData = GoogleAccessToken::getToken($secureUploadPath);
+                $accessToken = $tokenData['access_token'];
+                $projectId = $tokenData['project_id'];
+                
+                // 2. Prepare HTTP v1 Payload
+                $url = "https://fcm.googleapis.com/v1/projects/{$projectId}/messages:send";
+                
+                $notificationPayload = [
+                    'title' => $title,
+                    'body' => $body
+                ];
+    
+                // Add image if provided
+                if (!empty($finalImageUrl)) {
+                    $notificationPayload['image'] = $finalImageUrl;
+                }
+    
+                $payload = [
+                    'message' => [
+                        'topic' => $topic,
+                        'notification' => $notificationPayload,
+                        'data' => [
+                            'title' => $title,
+                            'body' => $body,
+                            'image' => $finalImageUrl,
+                            'click_action' => 'FLUTTER_NOTIFICATION_CLICK'
+                        ],
+                        'android' => [
+                            'priority' => 'high'
+                        ]
+                    ]
+                ];
+                
+                // 3. Send Request
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $url);
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                    'Authorization: Bearer ' . $accessToken,
+                    'Content-Type: application/json'
+                ]);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+                
+                $result = curl_exec($ch);
+                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                
+                if ($result === FALSE) {
+                     throw new Exception("CURL Error: " . curl_error($ch));
+                }
+                
+                curl_close($ch);
+                
+                $response = json_decode($result, true);
+                
+                if ($httpCode == 200 && isset($response['name'])) {
+                    $message = "Notification sent successfully! (ID: " . $response['name'] . ")";
+                } else {
+                    $errorMsg = isset($response['error']['message']) ? $response['error']['message'] : $result;
+                    throw new Exception("FCM Error ($httpCode): " . $errorMsg);
+                }
+                
+            } catch (Exception $e) {
+                $error = $e->getMessage();
+            }
         }
     }
 }
@@ -156,7 +190,7 @@ $isConfigured = file_exists($secureUploadPath);
                         </div>
                     <?php endif; ?>
 
-                    <form method="POST">
+                    <form method="POST" enctype="multipart/form-data">
                         <div class="mb-3">
                             <label class="form-label">Title</label>
                             <input type="text" name="title" class="form-control" required placeholder="e.g. New Update Available!" <?php echo !$isConfigured ? 'disabled' : ''; ?>>
@@ -165,9 +199,23 @@ $isConfigured = file_exists($secureUploadPath);
                             <label class="form-label">Message Body</label>
                             <textarea name="body" class="form-control" rows="4" required placeholder="Enter your message details..." <?php echo !$isConfigured ? 'disabled' : ''; ?>></textarea>
                         </div>
+                        
+                        <!-- Image Upload Section -->
+                         <div class="mb-3">
+                            <label class="form-label">Notification Image (Optional)</label>
+                            <div class="card p-3 bg-light text-center border-dashed" style="border: 2px dashed #ccc; cursor: pointer;" onclick="document.getElementById('imgUpload').click()">
+                                <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
+                                <p class="mb-0 text-muted">Click or Drag to Upload Image</p>
+                                <input type="file" name="notification_image" id="imgUpload" class="d-none" accept="image/*" onchange="previewImage(this)">
+                            </div>
+                            <div id="imagePreview" class="mt-2 text-center d-none">
+                                <img src="" style="max-height: 150px; border-radius: 8px; border: 1px solid #ddd;">
+                                <p class="small text-success mt-1">Image selected</p>
+                            </div>
+                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Image URL (Optional)</label>
+                            <label class="form-label">Or Enter Image URL</label>
                             <input type="url" name="image_url" class="form-control" placeholder="https://example.com/banner.jpg" <?php echo !$isConfigured ? 'disabled' : ''; ?>>
                         </div>
                         
@@ -216,5 +264,19 @@ $isConfigured = file_exists($secureUploadPath);
         </div>
     </div>
 </div>
+
+<script>
+function previewImage(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var preview = document.getElementById('imagePreview');
+            preview.querySelector('img').src = e.target.result;
+            preview.classList.remove('d-none');
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
 
 <?php include 'includes/footer.php'; ?>
