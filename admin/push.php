@@ -41,6 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Send Notification using HTTP v1
         $title = $_POST['title'] ?? '';
         $body = $_POST['body'] ?? '';
+        $imageUrl = $_POST['image_url'] ?? '';
         $topic = $_POST['topic'] ?? 'all';
         
         try {
@@ -56,17 +57,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // 2. Prepare HTTP v1 Payload
             $url = "https://fcm.googleapis.com/v1/projects/{$projectId}/messages:send";
             
+            $notificationPayload = [
+                'title' => $title,
+                'body' => $body
+            ];
+
+            // Add image if provided
+            if (!empty($imageUrl)) {
+                $notificationPayload['image'] = $imageUrl;
+            }
+
             $payload = [
                 'message' => [
                     'topic' => $topic,
-                    'notification' => [
-                        'title' => $title,
-                        'body' => $body
-                    ],
+                    'notification' => $notificationPayload,
                     'data' => [
                         'title' => $title,
                         'body' => $body,
-                        'click_action' => 'FLUTTER_NOTIFICATION_CLICK' // Standard, useful if needed
+                        'image' => $imageUrl, // Also send in data for foreground handling
+                        'click_action' => 'FLUTTER_NOTIFICATION_CLICK'
                     ],
                     'android' => [
                         'priority' => 'high'
@@ -155,6 +164,11 @@ $isConfigured = file_exists($secureUploadPath);
                         <div class="mb-3">
                             <label class="form-label">Message Body</label>
                             <textarea name="body" class="form-control" rows="4" required placeholder="Enter your message details..." <?php echo !$isConfigured ? 'disabled' : ''; ?>></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Image URL (Optional)</label>
+                            <input type="url" name="image_url" class="form-control" placeholder="https://example.com/banner.jpg" <?php echo !$isConfigured ? 'disabled' : ''; ?>>
                         </div>
                         
                         <div class="alert alert-info py-2">
