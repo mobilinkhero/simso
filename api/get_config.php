@@ -14,7 +14,8 @@ $result = $conn->query("SELECT setting_key, setting_value FROM settings WHERE se
     'alt_home_title', 'alt_home_subtitle', 'alt_input_label', 'alt_input_hint', 'alt_button_text',
     'whitelist_error_title', 'whitelist_error_msg', 'whitelist_action_text', 'whitelist_action_url',
     'alt_error_title', 'alt_error_msg', 'whitelisted_countries',
-    'whitelist_banner_image', 'whitelist_banner_url', 'alt_banner_image', 'alt_banner_url'
+    'whitelist_banner_image', 'whitelist_banner_url', 'alt_banner_image', 'alt_banner_url',
+    'enable_ads', 'admob_app_id', 'banner_ad_id', 'rewarded_ad_id', 'interstitial_ad_id'
 )");
 
 $settings = [];
@@ -81,8 +82,16 @@ if ($isWhitelisted) {
     $config['action_text'] = ''; // No action button for non-whitelisted
     $config['action_url'] = '';
     $config['banner_image'] = $settings['alt_banner_image'] ?? '';
+    $config['banner_image'] = $settings['alt_banner_image'] ?? '';
     $config['banner_url'] = $settings['alt_banner_url'] ?? '';
 }
+
+// Attach Ad Settings (Global)
+$config['enable_ads'] = $settings['enable_ads'] == '1';
+$config['admob_app_id'] = $settings['admob_app_id'] ?? 'ca-app-pub-3940256099942544~3347511713';
+$config['banner_ad_id'] = $settings['banner_ad_id'] ?? 'ca-app-pub-3940256099942544/6300978111';
+$config['rewarded_ad_id'] = $settings['rewarded_ad_id'] ?? 'ca-app-pub-3940256099942544/5224354917';
+$config['interstitial_ad_id'] = $settings['interstitial_ad_id'] ?? 'ca-app-pub-3940256099942544/1033173712';
 
 $conn->close();
 
