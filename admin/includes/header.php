@@ -144,6 +144,12 @@ AdminAuth::requireAuth();
                     <i class="fas fa-image"></i> Banner Config
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'push.php' ? 'active' : ''; ?>"
+                    href="push.php">
+                    <i class="fas fa-bell"></i> Push Notifications
+                </a>
+            </li>
             <li class="nav-item mt-auto" style="margin-top: auto; padding-top: 20px; border-top: 1px solid #eee;">
                 <a class="nav-link text-danger" href="logout.php">
                     <i class="fas fa-sign-out-alt"></i> Logout
